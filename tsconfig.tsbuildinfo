@@ -1,0 +1,1 @@
+{"root":["./src/app.ts","./src/index.ts","./src/consumer/eventworker.ts","./src/models/eventlog.ts","./src/queue/redis.ts","./src/routes/event.ts"],"version":"5.8.3"}
