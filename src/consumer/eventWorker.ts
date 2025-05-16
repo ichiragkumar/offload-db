@@ -6,14 +6,17 @@ import dotenv from 'dotenv';
 dotenv.config();
 mongoose.connect(process.env.MONGO_URI!);
 
-let lastId = '0-0';
-
 const BATCH_SIZE = 100;
+const LAST_ID_KEY = 'last_stream_id';
 
 async function processEvents() {
+  let lastId = (await redis.get(LAST_ID_KEY)) || '0-0';
+
+  // Read new events from stream after lastId
   const response = await redis.xread(
     'COUNT', BATCH_SIZE,
-    'STREAMS', STREAM_KEY, lastId
+    'STREAMS', STREAM_KEY,
+    lastId
   );
 
   if (!response) return;
@@ -37,6 +40,7 @@ async function processEvents() {
   if (events.length) {
     await EventLog.insertMany(events);
     console.log(`Inserted ${events.length} events`);
+    await redis.set(LAST_ID_KEY, lastId);
   }
 }
 
